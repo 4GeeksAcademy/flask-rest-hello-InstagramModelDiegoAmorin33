@@ -1,19 +1,34 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean
-from sqlalchemy.orm import Mapped, mapped_column
 
 db = SQLAlchemy()
 
 class User(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    bio = db.Column(db.Text)
+    foto_perfil = db.Column(db.String(255))
 
+class Post(db.Model):
+    __tablename__ = "posts"
+    id = db.Column(db.Integer, primary_key=True)
+    media_url = db.Column(db.String(255), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "email": self.email,
-            # do not serialize the password, its a security breach
-        }
+class Comment(db.Model):
+    __tablename__ = "comments"
+    id = db.Column(db.Integer, primary_key=True)
+    texto = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
+
+class Like(db.Model):
+    __tablename__ = "likes"
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), primary_key=True)
+
+class Follow(db.Model):
+    __tablename__ = "follows"
+    user_from_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    user_to_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
